@@ -975,6 +975,7 @@ sc16is7x2_set_termios(struct uart_port *port, struct ktermios *termios,
 {
 	struct sc16is7x2_channel *chan = to_sc16is7x2_channel(port);
 	struct sc16is7x2_chip *ts = chan->chip;
+	unsigned ch = (&ts->channel[1] == chan) ? 1 : 0;
 	unsigned long flags;
 	unsigned int baud;
 	u8 lcr, fcr = 0;
@@ -986,7 +987,13 @@ sc16is7x2_set_termios(struct uart_port *port, struct ktermios *termios,
 	chan->quot = uart_get_divisor(port, baud);
 	chan->handle_baud = true;
 
-	dev_info(&ts->spi->dev, "%s (baud %u)\n", __func__, baud);
+	dev_info(&ts->spi->dev, "%s ch%d : baud %u", __func__, ch, baud);
+
+	dev_dbg(&ts->spi->dev, "%s ch%d : ktermios : c_iflag %08X, c_oflag %08X,"
+		" c_cflag %08X, c_lflag %08X, c_line %02X, ", __func__, ch,
+		termios->c_iflag, termios->c_oflag,
+		termios->c_cflag, termios->c_lflag,
+		termios->c_line);
 
 	/* set word length */
 	switch (termios->c_cflag & CSIZE) {
